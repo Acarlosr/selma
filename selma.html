@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Selma</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --navy-deep: #050d1a;
+      --navy-mid:  #0a1a35;
+      --navy-glow: #102550;
+      --blue-accent: #1e4fa0;
+      --blue-bright: #4a90d9;
+      --blue-light:  #7bb8f0;
+      --sakura-pink: #f5c8d4;
+      --sakura-pale: #fce8ef;
+      --gold:        #c9a96e;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      background: var(--navy-deep);
+      font-family: 'Cormorant Garamond', serif;
+      color: var(--blue-light);
+      position: relative;
+    }
+
+    /* ── SVG SCENE ── */
+    #scene {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ── OVERLAY GRADIENT ── */
+    #overlay {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 60% at 50% 80%, transparent 30%, rgba(5,13,26,.55) 80%),
+        radial-gradient(ellipse 100% 40% at 50% 100%, rgba(5,13,26,.9) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    /* ── MOON ── */
+    .moon {
+      position: fixed;
+      top: 7%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 38% 38%, #e8f4ff, #b3d4f5 40%, #7aaedd 70%, #4a7db5);
+      box-shadow:
+        0 0 40px 18px rgba(74,144,217,.35),
+        0 0 100px 40px rgba(30,79,160,.2),
+        inset -8px -6px 20px rgba(0,0,40,.25);
+      animation: moonPulse 6s ease-in-out infinite;
+    }
+    @keyframes moonPulse {
+      0%,100% { box-shadow: 0 0 40px 18px rgba(74,144,217,.35), 0 0 100px 40px rgba(30,79,160,.2), inset -8px -6px 20px rgba(0,0,40,.25); }
+      50%      { box-shadow: 0 0 55px 28px rgba(74,144,217,.5),  0 0 130px 60px rgba(30,79,160,.3), inset -8px -6px 20px rgba(0,0,40,.25); }
+    }
+
+    /* ── PETALS ── */
+    .petal {
+      position: fixed;
+      top: -30px;
+      border-radius: 150% 0 150% 0;
+      opacity: 0;
+      animation: fall linear infinite;
+      pointer-events: none;
+    }
+    @keyframes fall {
+      0%   { transform: translateY(0)    rotate(0deg)   translateX(0);   opacity: 0; }
+      5%   { opacity: .85; }
+      90%  { opacity: .6; }
+      100% { transform: translateY(110vh) rotate(540deg) translateX(60px); opacity: 0; }
+    }
+
+    /* ── STARS ── */
+    .stars {
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 10%  15%, rgba(255,255,255,.8) 0%, transparent 100%),
+        radial-gradient(1px 1px at 22%   8%, rgba(255,255,255,.6) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 35% 22%, rgba(200,225,255,.9) 0%, transparent 100%),
+        radial-gradient(1px 1px at 48%   5%, rgba(255,255,255,.7) 0%, transparent 100%),
+        radial-gradient(1px 1px at 60%  18%, rgba(255,255,255,.5) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 72%  10%, rgba(200,225,255,.8) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85%  25%, rgba(255,255,255,.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 92%   7%, rgba(255,255,255,.9) 0%, transparent 100%),
+        radial-gradient(1px 1px at 15%  35%, rgba(255,255,255,.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 78%  30%, rgba(255,255,255,.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 55%  40%, rgba(200,225,255,.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30%  45%, rgba(255,255,255,.3) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    /* ── CONTENT ── */
+    #content {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .subtitle-top {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: clamp(12px, 1.8vw, 18px);
+      letter-spacing: .35em;
+      color: var(--blue-light);
+      opacity: .75;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+      animation: fadeUp 1.8s ease both;
+    }
+
+    .name-wrap {
+      position: relative;
+      display: inline-block;
+      animation: fadeUp 1.8s ease .3s both;
+    }
+
+    .name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(72px, 13vw, 160px);
+      font-weight: 700;
+      letter-spacing: .06em;
+      line-height: 1;
+      background: linear-gradient(
+        160deg,
+        #fce8ef 0%,
+        #c9dff5 25%,
+        #ffffff 50%,
+        #a8d0f0 70%,
+        #f5c8d4 100%
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 30px rgba(123,184,240,.6)) drop-shadow(0 0 70px rgba(74,144,217,.3));
+      position: relative;
+    }
+
+    .name::after {
+      content: 'Selma';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        160deg,
+        #fce8ef 0%,
+        #c9dff5 25%,
+        #ffffff 50%,
+        #a8d0f0 70%,
+        #f5c8d4 100%
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: blur(18px) opacity(.4);
+    }
+
+    .divider {
+      width: 180px;
+      height: 1px;
+      margin: 22px auto;
+      background: linear-gradient(90deg, transparent, var(--blue-bright), var(--sakura-pink), var(--blue-bright), transparent);
+      animation: fadeUp 1.8s ease .6s both;
+    }
+
+    .subtitle-bottom {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: clamp(13px, 1.6vw, 17px);
+      letter-spacing: .28em;
+      color: var(--sakura-pink);
+      opacity: .8;
+      animation: fadeUp 1.8s ease .9s both;
+    }
+
+    /* Japanese kanji decoration */
+    .kanji {
+      position: fixed;
+      font-family: serif;
+      color: rgba(123,184,240,.08);
+      pointer-events: none;
+      user-select: none;
+      animation: fadeUp 3s ease 1.5s both;
+    }
+    .kanji-left  { left: 4vw;  bottom: 12%; font-size: clamp(80px,12vw,160px); writing-mode: vertical-rl; }
+    .kanji-right { right: 4vw; top: 18%;    font-size: clamp(60px, 9vw,120px); writing-mode: vertical-rl; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── WATER RIPPLE AT BOTTOM ── */
+    .water {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 90px;
+      overflow: hidden;
+      opacity: .35;
+      pointer-events: none;
+    }
+    .water svg { width: 200%; height: 100%; animation: waterMove 8s linear infinite; }
+    @keyframes waterMove {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ── MUSIC PLAYER ── */
+    #music-btn {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(123,184,240,.45);
+      background: rgba(5,13,26,.75);
+      backdrop-filter: blur(12px);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      transition: border-color .3s, box-shadow .3s, transform .2s;
+      pointer-events: all;
+      animation: fadeUp 2s ease 1.8s both;
+    }
+    #music-btn:hover {
+      border-color: rgba(245,200,212,.7);
+      box-shadow: 0 0 22px rgba(74,144,217,.4), 0 0 8px rgba(245,200,212,.3);
+      transform: scale(1.08);
+    }
+    #music-btn svg { width: 22px; height: 22px; transition: opacity .3s; }
+    #music-btn .icon-play  { display: block; }
+    #music-btn .icon-pause { display: none; }
+    #music-btn.playing .icon-play  { display: none; }
+    #music-btn.playing .icon-pause { display: block; }
+
+    /* pulsing ring when playing */
+    #music-btn.playing::before {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(245,200,212,.35);
+      animation: ringPulse 2s ease-in-out infinite;
+    }
+    @keyframes ringPulse {
+      0%,100% { transform: scale(1);   opacity: .6; }
+      50%      { transform: scale(1.2); opacity: 0; }
+    }
+
+    #music-label {
+      position: fixed;
+      bottom: 34px;
+      right: 90px;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 13px;
+      letter-spacing: .18em;
+      color: var(--blue-light);
+      opacity: 0;
+      transition: opacity .4s;
+      pointer-events: none;
+      white-space: nowrap;
+      animation: fadeUp 2s ease 1.8s both;
+    }
+    #music-label.visible { opacity: .7; }
+  </style>
+</head>
+<body>
+
+<!-- Stars -->
+<div class="stars"></div>
+
+<!-- SVG Scene – cherry blossom trees -->
+<svg id="scene" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Sky gradient -->
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#020812"/>
+      <stop offset="40%" stop-color="#081428"/>
+      <stop offset="75%" stop-color="#0e2248"/>
+      <stop offset="100%" stop-color="#163060"/>
+    </linearGradient>
+    <!-- Reflection gradient -->
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"  stop-color="#0d2040" stop-opacity=".9"/>
+      <stop offset="100%" stop-color="#020812"/>
+    </linearGradient>
+    <!-- Moon glow filter -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Trunk gradient -->
+    <linearGradient id="trunkL" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0a1830"/>
+      <stop offset="100%" stop-color="#162848"/>
+    </linearGradient>
+    <linearGradient id="trunkR" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#162848"/>
+      <stop offset="100%" stop-color="#0a1830"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background sky -->
+  <rect width="1440" height="900" fill="url(#sky)"/>
+
+  <!-- Distant horizon glow -->
+  <ellipse cx="720" cy="620" rx="600" ry="120" fill="#1e4fa0" opacity=".12"/>
+  <ellipse cx="720" cy="650" rx="400" ry="80"  fill="#4a90d9" opacity=".06"/>
+
+  <!-- Water / pond reflection -->
+  <rect x="0" y="680" width="1440" height="220" fill="url(#water)"/>
+  <!-- Reflection shimmer lines -->
+  <g opacity=".18" stroke="#4a90d9" stroke-width="1">
+    <line x1="200" y1="720" x2="600" y2="724"/><line x1="150" y1="740" x2="500" y2="743"/>
+    <line x1="800" y1="715" x2="1200" y2="720"/><line x1="850" y1="738" x2="1300" y2="741"/>
+    <line x1="400" y1="760" x2="900"  y2="763"/><line x1="300" y1="780" x2="700"  y2="782"/>
+    <line x1="600" y1="800" x2="1100" y2="802"/>
+  </g>
+
+  <!-- ═══ LEFT TREE ═══ -->
+  <!-- Trunk & major branches -->
+  <g fill="url(#trunkL)">
+    <rect x="38" y="420" width="28" height="480" rx="8"/>
+    <!-- branches -->
+    <polygon points="52,450 30,340 44,338 60,430"/>
+    <polygon points="58,490 10,400 24,392 68,475"/>
+    <polygon points="62,530 -10,460 5,448 72,515"/>
+    <polygon points="52,470 130,370 140,382 66,468"/>
+    <polygon points="56,510 160,440 166,454 68,510"/>
+  </g>
+  <!-- Blossom clusters – left tree -->
+  <g opacity=".9">
+    <!-- far left branches -->
+    <ellipse cx="-5"  cy="330" rx="70" ry="55" fill="#e8b8cc" opacity=".7"/>
+    <ellipse cx="20"  cy="380" rx="55" ry="45" fill="#f0cad8" opacity=".65"/>
+    <ellipse cx="-15" cy="460" rx="65" ry="50" fill="#daa8be" opacity=".7"/>
+    <!-- center-ish -->
+    <ellipse cx="80"  cy="310" rx="80" ry="60" fill="#f5d0e0" opacity=".72"/>
+    <ellipse cx="110" cy="370" rx="70" ry="55" fill="#ebbccc" opacity=".68"/>
+    <ellipse cx="90"  cy="430" rx="75" ry="50" fill="#f2ccd8" opacity=".65"/>
+    <!-- rightward branches -->
+    <ellipse cx="170" cy="360" rx="65" ry="50" fill="#f0c8d6" opacity=".6"/>
+    <ellipse cx="155" cy="445" rx="70" ry="48" fill="#e8bac8" opacity=".62"/>
+    <!-- dark accent clusters -->
+    <ellipse cx="30"  cy="350" rx="40" ry="32" fill="#c490a8" opacity=".45"/>
+    <ellipse cx="100" cy="390" rx="50" ry="38" fill="#cc9db5" opacity=".4"/>
+  </g>
+
+  <!-- ═══ RIGHT TREE ═══ -->
+  <g fill="url(#trunkR)">
+    <rect x="1374" y="420" width="28" height="480" rx="8"/>
+    <polygon points="1388,450 1410,340 1396,338 1380,430"/>
+    <polygon points="1382,490 1430,400 1416,392 1372,475"/>
+    <polygon points="1378,530 1450,460 1435,448 1368,515"/>
+    <polygon points="1388,470 1310,370 1300,382 1374,468"/>
+    <polygon points="1384,510 1280,440 1274,454 1372,510"/>
+  </g>
+  <g opacity=".9">
+    <ellipse cx="1445" cy="330" rx="70" ry="55" fill="#e8b8cc" opacity=".7"/>
+    <ellipse cx="1420" cy="380" rx="55" ry="45" fill="#f0cad8" opacity=".65"/>
+    <ellipse cx="1455" cy="460" rx="65" ry="50" fill="#daa8be" opacity=".7"/>
+    <ellipse cx="1360" cy="310" rx="80" ry="60" fill="#f5d0e0" opacity=".72"/>
+    <ellipse cx="1330" cy="370" rx="70" ry="55" fill="#ebbccc" opacity=".68"/>
+    <ellipse cx="1350" cy="430" rx="75" ry="50" fill="#f2ccd8" opacity=".65"/>
+    <ellipse cx="1270" cy="360" rx="65" ry="50" fill="#f0c8d6" opacity=".6"/>
+    <ellipse cx="1285" cy="445" rx="70" ry="48" fill="#e8bac8" opacity=".62"/>
+    <ellipse cx="1410" cy="350" rx="40" ry="32" fill="#c490a8" opacity=".45"/>
+    <ellipse cx="1340" cy="390" rx="50" ry="38" fill="#cc9db5" opacity=".4"/>
+  </g>
+
+  <!-- ═══ MIDDLE BACKGROUND TREES (smaller, misty) ═══ -->
+  <!-- mid-left -->
+  <rect x="300" y="520" width="14" height="380" rx="5" fill="#0d1f3a" opacity=".8"/>
+  <ellipse cx="307" cy="490" rx="80" ry="55" fill="#d4a0ba" opacity=".38"/>
+  <ellipse cx="280" cy="510" rx="60" ry="45" fill="#e0b0c8" opacity=".32"/>
+  <ellipse cx="340" cy="505" rx="65" ry="42" fill="#cca0b8" opacity=".30"/>
+  <!-- mid-right -->
+  <rect x="1126" y="520" width="14" height="380" rx="5" fill="#0d1f3a" opacity=".8"/>
+  <ellipse cx="1133" cy="490" rx="80" ry="55" fill="#d4a0ba" opacity=".38"/>
+  <ellipse cx="1160" cy="510" rx="60" ry="45" fill="#e0b0c8" opacity=".32"/>
+  <ellipse cx="1100" cy="505" rx="65" ry="42" fill="#cca0b8" opacity=".30"/>
+  <!-- far-mid left -->
+  <rect x="520" y="560" width="10" height="340" rx="4" fill="#0d1f3a" opacity=".6"/>
+  <ellipse cx="525" cy="530" rx="55" ry="42" fill="#c898b0" opacity=".25"/>
+  <!-- far-mid right -->
+  <rect x="910" y="560" width="10" height="340" rx="4" fill="#0d1f3a" opacity=".6"/>
+  <ellipse cx="915" cy="530" rx="55" ry="42" fill="#c898b0" opacity=".25"/>
+
+  <!-- Ground / path -->
+  <ellipse cx="720" cy="680" rx="500" ry="30" fill="#0a1a35" opacity=".6"/>
+  <rect x="680" y="650" width="80" height="250" fill="#0d2040" opacity=".4"/>
+  <!-- Lanterns on path -->
+  <g fill="#1e4fa0" opacity=".6">
+    <rect x="675" y="630" width="8" height="50" rx="2"/>
+    <rect x="669" y="625" width="20" height="12" rx="3"/>
+    <rect x="717" y="630" width="8" height="50" rx="2"/>
+    <rect x="711" y="625" width="20" height="12" rx="3"/>
+  </g>
+  <!-- Lantern glow -->
+  <ellipse cx="679" cy="632" rx="18" ry="10" fill="#4a90d9" opacity=".25"/>
+  <ellipse cx="721" cy="632" rx="18" ry="10" fill="#4a90d9" opacity=".25"/>
+
+  <!-- Moon reflection on water -->
+  <ellipse cx="720" cy="780" rx="45" ry="15" fill="#b3d4f5" opacity=".18"/>
+  <ellipse cx="720" cy="790" rx="25" ry="8"  fill="#e8f4ff" opacity=".12"/>
+</svg>
+
+<!-- Overlay -->
+<div id="overlay"></div>
+
+<!-- Moon -->
+<div class="moon"></div>
+
+<!-- Kanji decorations -->
+<div class="kanji kanji-left">桜花</div>
+<div class="kanji kanji-right">月夜</div>
+
+<!-- Floating petals -->
+<div id="petals"></div>
+
+<!-- Water shimmer -->
+<div class="water">
+  <svg viewBox="0 0 2880 90" preserveAspectRatio="none">
+    <path d="M0,45 C240,20 480,70 720,45 C960,20 1200,70 1440,45 C1680,20 1920,70 2160,45 C2400,20 2640,70 2880,45 L2880,90 L0,90 Z"
+          fill="#4a90d9" opacity=".15"/>
+    <path d="M0,55 C360,30 720,80 1080,55 C1440,30 1800,80 2160,55 C2520,30 2880,80 2880,55 L2880,90 L0,90 Z"
+          fill="#7bb8f0" opacity=".1"/>
+  </svg>
+</div>
+
+<!-- Main content -->
+<div id="content">
+  <p class="subtitle-top">桜の季節 &nbsp;·&nbsp; Temporada das Cerejeiras</p>
+  <div class="name-wrap">
+    <h1 class="name">Selma</h1>
+  </div>
+  <div class="divider"></div>
+  <p class="subtitle-bottom">sob a lua de primavera &nbsp;·&nbsp; 春の月の下で</p>
+</div>
+
+<!-- Music button -->
+<button id="music-btn" title="Música japonesa">
+  <!-- Play icon -->
+  <svg class="icon-play" viewBox="0 0 24 24" fill="none" stroke="rgba(245,200,212,.9)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10" stroke="rgba(123,184,240,.6)"/>
+    <polygon points="10,8 16,12 10,16" fill="rgba(245,200,212,.85)" stroke="none"/>
+  </svg>
+  <!-- Pause icon -->
+  <svg class="icon-pause" viewBox="0 0 24 24" fill="none" stroke="rgba(245,200,212,.9)" stroke-width="1.8" stroke-linecap="round">
+    <circle cx="12" cy="12" r="10" stroke="rgba(123,184,240,.6)"/>
+    <line x1="9" y1="8" x2="9" y2="16"/><line x1="15" y1="8" x2="15" y2="16"/>
+  </svg>
+</button>
+<span id="music-label">音楽 · Música japonesa</span>
+
+<!-- Tone.js CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+<script>
+  /* ── Generate petals ── */
+  const container = document.getElementById('petals');
+  const colors = [
+    'rgba(245,200,212,.85)',
+    'rgba(252,232,239,.75)',
+    'rgba(218,168,190,.8)',
+    'rgba(200,220,245,.7)',
+    'rgba(235,185,210,.8)',
+    'rgba(210,185,235,.65)',
+  ];
+
+  for (let i = 0; i < 55; i++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    const size = 6 + Math.random() * 12;
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const delay  = Math.random() * 18;
+    const dur    = 10 + Math.random() * 14;
+    const left   = Math.random() * 100;
+
+    p.style.cssText = `
+      left:${left}%;
+      width:${size}px;
+      height:${size * .65}px;
+      background:${color};
+      animation-duration:${dur}s;
+      animation-delay:${delay}s;
+      transform:rotate(${Math.random()*360}deg);
+    `;
+    container.appendChild(p);
+  }
+
+  /* ── Japanese Music Engine (Tone.js) ── */
+  let musicStarted = false;
+  let isPlaying    = false;
+  let masterVol, reverb, kotoSynth, fluteSynth, bellSynth, padSynth;
+  let kotoPart, flutePart, bellPart, padPart;
+
+  async function initMusic() {
+    await Tone.start();
+
+    masterVol = new Tone.Volume(-6).toDestination();
+
+    // Deep reverb for Japanese spaciousness
+    reverb = new Tone.Reverb({ decay: 6, wet: 0.55 }).connect(masterVol);
+    await reverb.generate();
+
+    const delay = new Tone.FeedbackDelay({ delayTime: '8n', feedback: 0.25, wet: 0.2 }).connect(reverb);
+
+    // ── KOTO (plucked string) ──
+    kotoSynth = new Tone.PluckSynth({
+      attackNoise: 1.2,
+      dampening: 3200,
+      resonance: 0.96,
+    }).connect(delay);
+    kotoSynth.volume.value = -4;
+
+    // ── SHAKUHACHI FLUTE (breathy) ──
+    fluteSynth = new Tone.Synth({
+      oscillator: { type: 'sine' },
+      envelope: { attack: 0.18, decay: 0.3, sustain: 0.7, release: 1.6 },
+    }).connect(reverb);
+    fluteSynth.volume.value = -14;
+
+    // ── BELL / TINGSHA ──
+    bellSynth = new Tone.MetalSynth({
+      frequency: 520,
+      envelope: { attack: 0.001, decay: 1.8, release: 0.4 },
+      harmonicity: 5.1,
+      modulationIndex: 16,
+      resonance: 3200,
+      octaves: 1.2,
+    }).connect(reverb);
+    bellSynth.volume.value = -22;
+
+    // ── PAD (ambient wash) ──
+    padSynth = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: 'sine' },
+      envelope: { attack: 2.5, decay: 1, sustain: 0.8, release: 4 },
+    }).connect(reverb);
+    padSynth.volume.value = -28;
+
+    // Japanese pentatonic in D: D4 E4 F#4 A4 B4 D5 E5 F#5 A5 B5
+    const penta = ['D4','E4','F#4','A4','B4','D5','E5','F#5','A5','B5'];
+
+    // ── KOTO MELODY PATTERN ──
+    const kotoNotes = [
+      { time: '0:0:0',  note: 'D5',  dur: '4n' },
+      { time: '0:1:0',  note: 'A4',  dur: '4n' },
+      { time: '0:2:0',  note: 'F#4', dur: '4n' },
+      { time: '0:3:0',  note: 'E4',  dur: '4n' },
+      { time: '1:0:0',  note: 'D4',  dur: '2n' },
+      { time: '1:2:0',  note: 'E4',  dur: '4n' },
+      { time: '1:3:0',  note: 'F#4', dur: '4n' },
+      { time: '2:0:0',  note: 'A4',  dur: '4n' },
+      { time: '2:1:0',  note: 'B4',  dur: '4n' },
+      { time: '2:2:0',  note: 'A4',  dur: '4n' },
+      { time: '2:3:0',  note: 'F#4', dur: '4n' },
+      { time: '3:0:0',  note: 'E4',  dur: '2n' },
+      { time: '3:2:0',  note: 'D4',  dur: '2n' },
+      { time: '4:0:0',  note: 'F#5', dur: '4n' },
+      { time: '4:1:0',  note: 'E5',  dur: '4n' },
+      { time: '4:2:0',  note: 'D5',  dur: '4n' },
+      { time: '4:3:0',  note: 'B4',  dur: '4n' },
+      { time: '5:0:0',  note: 'A4',  dur: '2n' },
+      { time: '5:2:0',  note: 'F#4', dur: '4n' },
+      { time: '5:3:0',  note: 'A4',  dur: '4n' },
+      { time: '6:0:0',  note: 'B4',  dur: '4n' },
+      { time: '6:1:0',  note: 'D5',  dur: '4n' },
+      { time: '6:2:0',  note: 'A4',  dur: '4n' },
+      { time: '6:3:0',  note: 'F#4', dur: '4n' },
+      { time: '7:0:0',  note: 'E4',  dur: '2n' },
+      { time: '7:2:0',  note: 'D4',  dur: '2n' },
+    ];
+    kotoPart = new Tone.Part((time, val) => {
+      kotoSynth.triggerAttackRelease(val.note, val.dur, time);
+    }, kotoNotes);
+    kotoPart.loop = true;
+    kotoPart.loopEnd = '8m';
+
+    // ── FLUTE COUNTER-MELODY ──
+    const fluteNotes = [
+      { time: '0:2:0',  note: 'D5',  dur: '2n' },
+      { time: '1:1:0',  note: 'E5',  dur: '4n' },
+      { time: '1:3:0',  note: 'D5',  dur: '4n' },
+      { time: '2:1:0',  note: 'F#5', dur: '2n' },
+      { time: '3:0:0',  note: 'A5',  dur: '2n' },
+      { time: '3:2:0',  note: 'B4',  dur: '2n' },
+      { time: '4:1:0',  note: 'A5',  dur: '4n' },
+      { time: '4:3:0',  note: 'F#5', dur: '4n' },
+      { time: '5:1:0',  note: 'E5',  dur: '2n' },
+      { time: '6:0:0',  note: 'D5',  dur: '1n' },
+      { time: '7:0:0',  note: 'A4',  dur: '1n' },
+    ];
+    flutePart = new Tone.Part((time, val) => {
+      fluteSynth.triggerAttackRelease(val.note, val.dur, time);
+    }, fluteNotes);
+    flutePart.loop = true;
+    flutePart.loopEnd = '8m';
+
+    // ── BELL accents ──
+    const bellTimes = ['0:0:0','2:0:0','4:0:0','6:0:0'];
+    bellPart = new Tone.Part((time) => {
+      bellSynth.triggerAttackRelease('16n', time);
+    }, bellTimes.map(t => ({ time: t })));
+    bellPart.loop = true;
+    bellPart.loopEnd = '8m';
+
+    // ── PAD chords ──
+    const padChords = [
+      { time: '0:0:0', notes: ['D3','F#3','A3'] },
+      { time: '2:0:0', notes: ['A2','E3','A3'] },
+      { time: '4:0:0', notes: ['B2','D3','F#3'] },
+      { time: '6:0:0', notes: ['A2','D3','E3'] },
+    ];
+    padPart = new Tone.Part((time, val) => {
+      padSynth.triggerAttackRelease(val.notes, '2n', time);
+    }, padChords);
+    padPart.loop = true;
+    padPart.loopEnd = '8m';
+
+    Tone.Transport.bpm.value = 58;
+    Tone.Transport.loop = true;
+    Tone.Transport.loopEnd = '8m';
+
+    musicStarted = true;
+  }
+
+  async function toggleMusic() {
+    const btn   = document.getElementById('music-btn');
+    const label = document.getElementById('music-label');
+
+    if (!musicStarted) {
+      btn.style.opacity = '.5';
+      await initMusic();
+      btn.style.opacity = '1';
+    }
+
+    if (!isPlaying) {
+      kotoPart.start(0);
+      flutePart.start(0);
+      bellPart.start(0);
+      padPart.start(0);
+      Tone.Transport.start();
+      isPlaying = true;
+      btn.classList.add('playing');
+      label.classList.add('visible');
+    } else {
+      Tone.Transport.stop();
+      isPlaying = false;
+      btn.classList.remove('playing');
+      label.classList.remove('visible');
+    }
+  }
+
+  document.getElementById('music-btn').addEventListener('click', toggleMusic);
+</script>
+</body>
+</html>
